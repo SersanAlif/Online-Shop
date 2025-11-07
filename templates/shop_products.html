@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Modern Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shop_style.css') }}">
+</head>
+<body>
+    <!-- Header (sama seperti index) -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>ModernShop</span>
+                </div>
+                
+                <nav class="nav-menu">
+                    <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('products_page') }}" class="nav-link active">Products</a>
+                    <a href="{{ url_for('index') }}#categories" class="nav-link">Categories</a>
+                    <a href="#" class="nav-link">About</a>
+                </nav>
+                
+                <div class="header-actions">
+                    <form action="{{ url_for('search') }}" method="GET" class="search-form">
+                        <input type="text" name="q" placeholder="Search products..." class="search-input">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    
+                    <a href="{{ url_for('cart') }}" class="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header-section">
+        <div class="container">
+            <h1 class="page-title">Our Products</h1>
+            <p class="page-subtitle">Discover amazing products with best quality</p>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-layout">
+                <!-- Sidebar Filters -->
+                <aside class="filters-sidebar">
+                    <div class="filter-group">
+                        <h3 class="filter-title">Categories</h3>
+                        <div class="filter-options">
+                            <a href="{{ url_for('products_page') }}" class="filter-option {% if not selected_category %}active{% endif %}">
+                                <span>All Products</span>
+                                <span class="count">{{ products|length }}</span>
+                            </a>
+                            {% for category in categories %}
+                            <a href="{{ url_for('products_page', category=category.name) }}" 
+                               class="filter-option {% if selected_category == category.name %}active{% endif %}">
+                                <span>
+                                    <i class="fas {{ category.icon }}"></i>
+                                    {{ category.name }}
+                                </span>
+                                <span class="count">
+                                    {{ products|selectattr('category', 'equalto', category.name)|list|length }}
+                                </span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3 class="filter-title">Price Range</h3>
+                        <div class="price-range">
+                            <input type="range" class="price-slider" min="0" max="20000000" step="100000">
+                            <div class="price-values">
+                                <span class="price-min">Rp 0</span>
+                                <span class="price-max">Rp 20,000,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3 class="filter-title">Rating</h3>
+                        <div class="filter-options">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" class="rating-filter" value="5">
+                                <span class="checkbox-label">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span>& Up</span>
+                                </span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" class="rating-filter" value="4">
+                                <span class="checkbox-label">
+                                    <div class="stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                    <span>& Up</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Products Grid -->
+                <div class="products-content">
+                    <div class="products-toolbar">
+                        <div class="results-count">
+                            Showing <strong>{{ products|length }}</strong> products
+                            {% if selected_category %}in <strong>{{ selected_category }}</strong>{% endif %}
+                        </div>
+                        <div class="sort-options">
+                            <select class="sort-select">
+                                <option value="popular">Most Popular</option>
+                                <option value="newest">Newest</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="rating">Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="products-grid">
+                        {% for product in products %}
+                        <div class="product-card">
+                            {% if product.discount > 0 %}
+                            <div class="product-badge discount-badge">-{{ product.discount }}%</div>
+                            {% endif %}
+                            {% if product.new %}
+                            <div class="product-badge new-badge">New</div>
+                            {% endif %}
+                            
+                            <div class="product-image">
+                                <img src="{{ product.image }}" alt="{{ product.name }}">
+                                <div class="product-overlay">
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="overlay-btn">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" style="display:inline;">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="overlay-btn">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <span class="product-category">{{ product.category }}</span>
+                                <h3 class="product-name">{{ product.name }}</h3>
+                                
+                                <div class="product-rating">
+                                    <div class="stars">
+                                        {% for i in range(5) %}
+                                            {% if i < product.rating|int %}
+                                            <i class="fas fa-star"></i>
+                                            {% else %}
+                                            <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span class="rating-text">{{ product.rating }} ({{ product.reviews }})</span>
+                                </div>
+                                
+                                <div class="product-price">
+                                    {% if product.discount > 0 %}
+                                    <span class="price-original">Rp {{ "{:,.0f}".format(product.price) }}</span>
+                                    <span class="price-current">Rp {{ "{:,.0f}".format(product.price * (100 - product.discount) / 100) }}</span>
+                                    {% else %}
+                                    <span class="price-current">Rp {{ "{:,.0f}".format(product.price) }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="product-footer">
+                                    <span class="stock-info">
+                                        <i class="fas fa-box"></i>
+                                        Stock: {{ product.stock }}
+                                    </span>
+                                    <span class="sold-info">
+                                        <i class="fas fa-fire"></i>
+                                        {{ product.sold }} sold
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if products|length == 0 %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No Products Found</h3>
+                        <p>Try adjusting your filters or browse other categories</p>
+                        <a href="{{ url_for('products_page') }}" class="btn btn-primary">View All Products</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer (sama seperti index) -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo footer-logo">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>ModernShop</span>
+                    </div>
+                    <p class="footer-desc">
+                        Platform belanja online terpercaya dengan berbagai pilihan produk berkualitas
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('products_page') }}">Products</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Customer Service</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Returns</a></li>
+                        <li><a href="#">Payment Methods</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Jakarta, Indonesia</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>+62 812-3456-7890</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>info@modernshop.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 ModernShop. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ message }}</span>
+                        <button class="flash-close">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <style>
+    .page-header-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 60px 0;
+        text-align: center;
+        color: white;
+    }
+
+    .page-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .page-subtitle {
+        font-size: 18px;
+        opacity: 0.9;
+    }
+
+    .products-section {
+        padding: 60px 0;
+    }
+
+    .products-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 32px;
+    }
+
+    .filters-sidebar {
+        background: white;
+        padding: 24px;
+        border-radius: 16px;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .filter-group {
+        margin-bottom: 32px;
+    }
+
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: var(--dark);
+    }
+
+    .filter-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--gray);
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .filter-option:hover {
+        background: #f8fafc;
+        color: var(--primary);
+    }
+
+    .filter-option.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .filter-option .count {
+        background: #f8fafc;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .filter-option.active .count {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .products-content {
+        min-height: 500px;
+    }
+
+    .products-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+    }
+
+    .results-count {
+        font-size: 16px;
+        color: var(--gray);
+    }
+
+    .sort-select {
+        padding: 10px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-weight: 600;
+        color: var(--dark);
+        cursor: pointer;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 16px;
+    }
+
+    .empty-state i {
+        font-size: 80px;
+        color: #cbd5e1;
+        margin-bottom: 24px;
+    }
+
+    .empty-state h3 {
+        font-size: 24px;
+        color: var(--dark);
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        color: var(--gray);
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .products-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .filters-sidebar {
+            position: static;
+        }
+    }
+    </style>
+
+    <script src="{{ url_for('static', filename='js/shop_script.js') }}"></script>
+</body>
+</html>

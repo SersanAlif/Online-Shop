@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APFA Shop - Belanja Online Terpercaya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shop_style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>APFASHOP</span>
+                </div>
+                
+                <nav class="nav-menu">
+                    <a href="{{ url_for('index') }}" class="nav-link active">Home</a>
+                    <a href="{{ url_for('products_page') }}" class="nav-link">Products</a>
+                    <a href="#categories" class="nav-link">Categories</a>
+                    <a href="#about" class="nav-link">About</a>
+                </nav>
+                
+                <div class="header-actions">
+                    <form action="{{ url_for('search') }}" method="GET" class="search-form">
+                        <input type="text" name="q" placeholder="Search products..." class="search-input">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    
+                    <a href="{{ url_for('cart') }}" class="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Discover Amazing Products
+                        <span class="gradient-text">Just For You</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Belanja online mudah, cepat, dan terpercaya dengan berbagai pilihan produk berkualitas
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="{{ url_for('products_page') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-store"></i>
+                            Shop Now
+                        </a>
+                        <a href="#categories" class="btn btn-outline btn-lg">
+                            <i class="fas fa-compass"></i>
+                            Explore Categories
+                        </a>
+                    </div>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.total_products }}+</div>
+                            <div class="stat-label">Products</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.total_orders }}+</div>
+                            <div class="stat-label">Orders</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ stats.total_customers }}+</div>
+                            <div class="stat-label">Customers</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hero-image">
+                    <div class="hero-card hero-card-1">
+                        <img src="https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400" alt="Product">
+                        <div class="card-badge">New</div>
+                    </div>
+                    <div class="hero-card hero-card-2">
+                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" alt="Product">
+                        <div class="card-badge">Sale</div>
+                    </div>
+                    <div class="hero-card hero-card-3">
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" alt="Product">
+                        <div class="card-badge">Hot</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="categories" id="categories">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Browse by Category</h2>
+                <p class="section-subtitle">Temukan produk sesuai kebutuhan Anda</p>
+            </div>
+            
+            <div class="categories-grid">
+                {% for category in categories %}
+                <a href="{{ url_for('products_page', category=category.name) }}" class="category-card">
+                    <div class="category-icon" style="background: {{ category.color }}">
+                        <i class="fas {{ category.icon }}"></i>
+                    </div>
+                    <h3 class="category-name">{{ category.name }}</h3>
+                    <p class="category-count">
+                        {{ products|selectattr('category', 'equalto', category.name)|list|length }} products
+                    </p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Products</h2>
+                <p class="section-subtitle">Produk pilihan dengan kualitas terbaik</p>
+            </div>
+            
+            <div class="products-grid">
+                {% for product in featured_products %}
+                <div class="product-card">
+                    {% if product.discount > 0 %}
+                    <div class="product-badge discount-badge">-{{ product.discount }}%</div>
+                    {% endif %}
+                    {% if product.new %}
+                    <div class="product-badge new-badge">New</div>
+                    {% endif %}
+                    
+                    <div class="product-image">
+                        <img src="{{ product.image }}" alt="{{ product.name }}">
+                        <div class="product-overlay">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="overlay-btn">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" style="display:inline;">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="overlay-btn">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="product-info">
+                        <span class="product-category">{{ product.category }}</span>
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        
+                        <div class="product-rating">
+                            <div class="stars">
+                                {% for i in range(5) %}
+                                    {% if i < product.rating|int %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="rating-text">{{ product.rating }} ({{ product.reviews }})</span>
+                        </div>
+                        
+                        <div class="product-price">
+                            {% if product.discount > 0 %}
+                            <span class="price-original">Rp {{ "{:,.0f}".format(product.price) }}</span>
+                            <span class="price-current">Rp {{ "{:,.0f}".format(product.price * (100 - product.discount) / 100) }}</span>
+                            {% else %}
+                            <span class="price-current">Rp {{ "{:,.0f}".format(product.price) }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-footer">
+                            <span class="stock-info">
+                                <i class="fas fa-box"></i>
+                                Stock: {{ product.stock }}
+                            </span>
+                            <span class="sold-info">
+                                <i class="fas fa-fire"></i>
+                                {{ product.sold }} sold
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="section-footer">
+                <a href="{{ url_for('products_page') }}" class="btn btn-primary btn-lg">
+                    View All Products
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Arrivals -->
+    <section class="new-arrivals">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">New Arrivals</h2>
+                <p class="section-subtitle">Produk terbaru yang baru saja masuk</p>
+            </div>
+            
+            <div class="products-grid">
+                {% for product in new_products %}
+                <div class="product-card">
+                    <div class="product-badge new-badge">New</div>
+                    
+                    <div class="product-image">
+                        <img src="{{ product.image }}" alt="{{ product.name }}">
+                        <div class="product-overlay">
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="overlay-btn">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" style="display:inline;">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="overlay-btn">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="product-info">
+                        <span class="product-category">{{ product.category }}</span>
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        
+                        <div class="product-rating">
+                            <div class="stars">
+                                {% for i in range(5) %}
+                                    {% if i < product.rating|int %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="rating-text">{{ product.rating }}</span>
+                        </div>
+                        
+                        <div class="product-price">
+                            {% if product.discount > 0 %}
+                            <span class="price-original">Rp {{ "{:,.0f}".format(product.price) }}</span>
+                            <span class="price-current">Rp {{ "{:,.0f}".format(product.price * (100 - product.discount) / 100) }}</span>
+                            {% else %}
+                            <span class="price-current">Rp {{ "{:,.0f}".format(product.price) }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo footer-logo">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>ModernShop</span>
+                    </div>
+                    <p class="footer-desc">
+                        Platform belanja online terpercaya dengan berbagai pilihan produk berkualitas
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('products_page') }}">Products</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Customer Service</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Returns</a></li>
+                        <li><a href="#">Payment Methods</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Jakarta, Indonesia</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>+62 812-3456-7890</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>info@modernshop.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 APFAShop. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ message }}</span>
+                        <button class="flash-close">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <script src="{{ url_for('static', filename='js/shop_script.js') }}"></script>
+</body>
+</html>

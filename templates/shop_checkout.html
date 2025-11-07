@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Modern Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shop_style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>APFASHOP</span>
+                </div>
+                
+                <nav class="nav-menu">
+                    <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('products_page') }}" class="nav-link">Products</a>
+                    <a href="{{ url_for('index') }}#categories" class="nav-link">Categories</a>
+                    <a href="#" class="nav-link">About</a>
+                </nav>
+                
+                <div class="header-actions">
+                    <a href="{{ url_for('cart') }}" class="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="container">
+            <h1 class="page-title">Checkout</h1>
+            
+            <div class="checkout-steps">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <span>Shipping Info</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <span>Payment</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span>Confirmation</span>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('checkout') }}" class="checkout-form">
+                <div class="checkout-layout">
+                    <!-- Shipping Form -->
+                    <div class="checkout-main">
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-truck"></i>
+                                Shipping Information
+                            </h2>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="name">Full Name *</label>
+                                    <input type="text" id="name" name="name" required class="form-input" placeholder="John Doe">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Email *</label>
+                                    <input type="email" id="email" name="email" required class="form-input" placeholder="john@example.com">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone Number *</label>
+                                    <input type="tel" id="phone" name="phone" required class="form-input" placeholder="+62 812-3456-7890">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="address">Full Address *</label>
+                                    <textarea id="address" name="address" required class="form-textarea" rows="4" placeholder="Street address, apartment, floor, etc."></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="city">City *</label>
+                                    <input type="text" id="city" name="city" required class="form-input" placeholder="Jakarta">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="postal">Postal Code *</label>
+                                    <input type="text" id="postal" name="postal" required class="form-input" placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-credit-card"></i>
+                                Payment Method
+                            </h2>
+                            
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="credit_card" checked>
+                                    <div class="option-content">
+                                        <i class="fas fa-credit-card"></i>
+                                        <div>
+                                            <strong>Credit / Debit Card</strong>
+                                            <span>Visa, Mastercard, JCB</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="bank_transfer">
+                                    <div class="option-content">
+                                        <i class="fas fa-university"></i>
+                                        <div>
+                                            <strong>Bank Transfer</strong>
+                                            <span>BCA, Mandiri, BNI</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="ewallet">
+                                    <div class="option-content">
+                                        <i class="fas fa-wallet"></i>
+                                        <div>
+                                            <strong>E-Wallet</strong>
+                                            <span>GoPay, OVO, Dana</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="cod">
+                                    <div class="option-content">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <div>
+                                            <strong>Cash on Delivery</strong>
+                                            <span>Pay when you receive</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="order-summary">
+                        <h2 class="summary-title">Order Summary</h2>
+                        
+                        <div class="summary-items">
+                            {% for item in cart_products %}
+                            <div class="summary-item">
+                                <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
+                                <div class="item-details">
+                                    <h4>{{ item.product.name }}</h4>
+                                    <span>Qty: {{ item.quantity }}</span>
+                                </div>
+                                <span class="item-price">Rp {{ "{:,.0f}".format(item.subtotal) }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-calculations">
+                            <div class="calc-row">
+                                <span>Subtotal</span>
+                                <span>Rp {{ "{:,.0f}".format(total) }}</span>
+                            </div>
+                            <div class="calc-row">
+                                <span>Shipping</span>
+                                <span class="free-text">FREE</span>
+                            </div>
+                            <div class="calc-row">
+                                <span>Tax</span>
+                                <span>Rp 0</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="calc-row total-row">
+                                <span>Total</span>
+                                <span>Rp {{ "{:,.0f}".format(total) }}</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-block checkout-btn">
+                            <i class="fas fa-lock"></i>
+                            Place Order
+                        </button>
+
+                        <div class="security-badges">
+                            <div class="badge-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Secure Payment</span>
+                            </div>
+                            <div class="badge-item">
+                                <i class="fas fa-undo"></i>
+                                <span>Easy Returns</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo footer-logo">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>ModernShop</span>
+                    </div>
+                    <p class="footer-desc">Platform belanja online terpercaya dengan berbagai pilihan produk berkualitas</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('products_page') }}">Products</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-map-marker-alt"></i><span>Jakarta, Indonesia</span></li>
+                        <li><i class="fas fa-phone"></i><span>+62 812-3456-7890</span></li>
+                        <li><i class="fas fa-envelope"></i><span>info@modernshop.com</span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 ModernShop. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+    .checkout-section {
+        padding: 60px 0;
+        background: var(--light);
+        min-height: 70vh;
+    }
+
+    .checkout-steps {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin: 40px 0;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--gray);
+        font-weight: 600;
+    }
+
+    .step.active {
+        color: var(--primary);
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    .step.active .step-number {
+        background: var(--primary);
+        color: white;
+    }
+
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: 1fr 450px;
+        gap: 32px;
+    }
+
+    .checkout-main {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .form-section {
+        background: white;
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .form-section .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .form-section .section-title i {
+        color: var(--primary);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 14px;
+    }
+
+    .form-input,
+    .form-textarea {
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.3s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .payment-option {
+        display: block;
+        cursor: pointer;
+    }
+
+    .payment-option input[type="radio"] {
+        display: none;
+    }
+
+    .option-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+
+    .payment-option input:checked + .option-content {
+        border-color: var(--primary);
+        background: #f0f4ff;
+    }
+
+    .option-content i {
+        font-size: 28px;
+        color: var(--primary);
+    }
+
+    .option-content strong {
+        display: block;
+        color: var(--dark);
+        margin-bottom: 4px;
+    }
+
+    .option-content span {
+        font-size: 13px;
+        color: var(--gray);
+    }
+
+    .order-summary {
+        background: white;
+        padding: 32px;
+        border-radius: 20px;
+        height: fit-content;
+        position: sticky;
+        top: 120px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .summary-items {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-item {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .summary-item img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .item-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .item-details h4 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .item-details span {
+        font-size: 12px;
+        color: var(--gray);
+    }
+
+    .item-price {
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .summary-divider {
+        height: 1px;
+        background: #e2e8f0;
+        margin: 16px 0;
+    }
+
+    .summary-calculations {
+        margin-bottom: 24px;
+    }
+
+    .calc-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        color: var(--gray);
+    }
+
+    .free-text {
+        color: var(--success);
+        font-weight: 700;
+    }
+
+    .total-row {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--dark);
+        padding-top: 16px;
+    }
+
+    .checkout-btn {
+        margin-bottom: 20px;
+    }
+
+    .security-badges {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .badge-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--gray);
+    }
+
+    .badge-item i {
+        font-size: 24px;
+        color: var(--success);
+    }
+
+    @media (max-width: 1024px) {
+        .checkout-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .order-summary {
+            position: static;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .checkout-steps {
+            gap: 20px;
+        }
+
+        .step span {
+            display: none;
+        }
+    }
+    </style>
+
+    <script src="{{ url_for('static', filename='js/shop_script.js') }}"></script>
+</body>
+</html>
