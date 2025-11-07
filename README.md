@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🛍️ APFA Modern Shop - E-Commerce Platform
 
 Platform belanja online modern dengan tampilan menarik dan fitur lengkap menggunakan Flask.
@@ -235,3 +236,6 @@ Free to use for learning and development purposes.
 **Happy Shopping! 🛍️✨**
 
 Dibuat dengan ❤️ menggunakan Flask dan Modern Web Technologies
+=======
+# Online-Shop
+>>>>>>> 1e0ee212535afb6749af0199abc2aa0f381cf5e2
